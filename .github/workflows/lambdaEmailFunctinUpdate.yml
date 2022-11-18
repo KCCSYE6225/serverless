@@ -1,0 +1,57 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Building Lambda 
+
+env:
+  AWS_REGION: us-east-1
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+    
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      # Runs a single command using the runners shell
+      - name: Installing dependencies
+        run: npm ci
+
+      - name: Compilation checking
+        run: node index.js
+
+      # Runs a set of commands using the runners shell
+      - name: Creating zip for lambda function
+        run: |
+          zip lambda.zip index.js
+      
+      - name: AWS credentials 
+        uses: aws-actions/configure-aws-credentials@v1
+        with: 
+          aws-access-key-id: ${{ secrets.AWS_GH_DEMO_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_GH_DEMO_SECRET_ACCESS_KEY }}
+          aws-region:  ${{ env.AWS_REGION }}
+      
+      - name: Printing the contents of Directory before s3 copy
+        run: ls -l
+
+      - name: Printing the path of Directory
+        run: pwd
+
+      - name: copying lambda zip to s3
+        run: |
+          aws s3 cp lambda.zip s3://${{secrets.AWS_LAMBDA_EMAIL_VERIFICATION}}
+      
+      - name: updating lambda function
+        run: |
+          aws lambda update-function-code --publish --function-name handler --s3-bucket ${{ secrets.AWS_LAMBDA_EMAIL_VERIFICATION }} --s3-key lambda.zip
