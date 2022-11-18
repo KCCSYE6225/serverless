@@ -33,7 +33,7 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Creating zip for lambda function
         run: |
-          zip lambda.zip index.js
+          zip -r lambda.zip .
       
       - name: AWS credentials 
         uses: aws-actions/configure-aws-credentials@v1
