@@ -6,8 +6,8 @@ env:
   AWS_REGION: us-east-1
 
 on:
-  pull_request:
-    branches: [ main ]
+  push:
+    branches: [ asg08-1 ]
 
 jobs:
   build:
@@ -33,14 +33,14 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Creating zip for lambda function
         run: |
-          zip lambda.zip index.js
+          zip -r lambda.zip .
       
       - name: AWS credentials 
         uses: aws-actions/configure-aws-credentials@v1
         with: 
-          aws-access-key-id: ${{ secrets.AWS_GH_DEMO_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_GH_DEMO_SECRET_ACCESS_KEY }}
-          aws-region:  ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_GH_DEV_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_GH_DEV_SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
       
       - name: Printing the contents of Directory before s3 copy
         run: ls -l
